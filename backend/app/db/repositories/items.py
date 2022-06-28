@@ -135,6 +135,9 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
                 SELLER_USERNAME_ALIAS,
             ),
         )
+
+
+
         # fmt: on
 
         if tag:
@@ -203,16 +206,25 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         query_params.extend([limit, offset])
 
         items_rows = await self.connection.fetch(query.get_sql(), *query_params)
-
-        return [
-            await self._get_item_from_db_record(
-                item_row=item_row,
-                slug=item_row[SLUG_ALIAS],
-                seller_username=item_row[SELLER_USERNAME_ALIAS],
-                requested_user=requested_user,
+        items = []
+        for item_row in items_rows:
+            query_sellers = Query.from_(
+                users,
+            ).select(users.id)\
+                .as_(
+                SELLER_USERNAME_ALIAS,
             )
-            for item_row in items_rows
-        ]
+            sellers = await self.connection.fetch(query_sellers.get_sql(), )
+            print(sellers)
+            item = await self._get_item_from_db_record(
+                    item_row=item_row,
+                    slug=item_row[SLUG_ALIAS],
+                    seller_username=item_row[SELLER_USERNAME_ALIAS],
+                    requested_user=requested_user,
+                )
+            items.append(item)
+        return  items
+
 
     async def get_items_for_user_feed(
         self,
