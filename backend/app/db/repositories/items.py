@@ -202,6 +202,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         )
         query_params.extend([limit, offset])
 
+
         items_rows = await self.connection.fetch(query.get_sql(), *query_params)
 
         return [
