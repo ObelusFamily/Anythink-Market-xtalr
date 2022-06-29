@@ -127,6 +127,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
             items.created_at,
             items.updated_at,
             users.star,
+            Query.from_(items_to_tags).where(items.id == items_to_tags.item_id).select(items_to_tags.tag).limit(1).as_('has_tags')
         ).inner_join(users).on(users.id == items.seller_id)
         # fmt: on
 
@@ -155,19 +156,11 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
             query_params_count += 1
 
             # fmt: off
-            query = query.join(
-                users,
-            ).on(
-                (items.seller_id == users.id) & (
-                    users.id == Query.from_(
-                        users,
-                    ).where(
+            query = query.where(
                         users.username == Parameter(query_params_count),
                     ).select(
                         users.id,
                     )
-                ),
-            )
             # fmt: on
 
         if favorited:
@@ -194,8 +187,12 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
             Parameter(query_params_count + 2),
         )
         query_params.extend([limit, offset])
+        # import logging
+        # logger = logging.getLogger(__name__)
+        # logger.warning(query.get_sql())
 
         items_rows = await self.connection.fetch(query.get_sql(), *query_params)
+
 
         return [
             await self._get_item_from_db_record(
@@ -203,6 +200,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
                 slug=item_row[SLUG_ALIAS],
                 seller=Profile(username=item_row['username'], bio=item_row['bio'], image=item_row['image']),
                 requested_user=requested_user,
+                has_tags= True if item_row['has_tags'] else False
             )
             for item_row in items_rows
         ]
@@ -295,6 +293,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         seller_username: Optional[str] = None,
         seller: Optional[User] = None,
         requested_user: Optional[User],
+        has_tags: Optional[bool] = True
     ) -> Item:
         return Item(
             id_=item_row["id"],
@@ -307,7 +306,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
                 username=seller_username,
                 requested_user=requested_user,
             ) if seller_username else seller,
-            tags=await self.get_tags_for_item_by_slug(slug=slug),
+            tags=await self.get_tags_for_item_by_slug(slug=slug) if has_tags else [],
             favorites_count=await self.get_favorites_count_for_item_by_slug(
                 slug=slug,
             ),
