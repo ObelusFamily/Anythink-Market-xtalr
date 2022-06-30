@@ -55,7 +55,7 @@ def create_users_table() -> None:
         "users",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("username", sa.Text, unique=True, nullable=False, index=True),
-        sa.Column("email", sa.Text, unique=True, nullable=False, index=True),
+        sa.Column("email", sa.Text, unique=True, nullable=False, index=False),
         sa.Column("salt", sa.Text, nullable=False),
         sa.Column("hashed_password", sa.Text),
         sa.Column("bio", sa.Text, nullable=False, server_default=""),
@@ -100,7 +100,7 @@ def create_items_table() -> None:
     op.create_table(
         "items",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("slug", sa.Text, unique=True, nullable=False, index=True),
+        sa.Column("slug", sa.Text, unique=True, nullable=False, index=False),
         sa.Column("title", sa.Text, nullable=False),
         sa.Column("description", sa.Text, nullable=False),
         sa.Column("body", sa.Text, nullable=True),
