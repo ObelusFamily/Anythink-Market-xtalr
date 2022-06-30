@@ -27,7 +27,7 @@ const LoggedInView = (props) => {
   if (props.currentUser) {
     return (
       <ul className="navbar-nav ml-auto">
-        {props.currentUser.role === "admin" && (
+        {true && (
           <li className="nav-item">
             <Link to="/editor" className="nav-link">
               <i className="ion-compose"></i>&nbsp;New Item
