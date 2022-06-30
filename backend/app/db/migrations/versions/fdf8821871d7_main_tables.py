@@ -100,7 +100,7 @@ def create_items_table() -> None:
     op.create_table(
         "items",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("slug", sa.Text, unique=True, nullable=False, index=False),
+        sa.Column("slug", sa.Text, unique=True, nullable=False, index=True),
         sa.Column("title", sa.Text, nullable=False),
         sa.Column("description", sa.Text, nullable=False),
         sa.Column("body", sa.Text, nullable=True),
